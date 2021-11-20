@@ -10,10 +10,24 @@ renderer.setClearColor(0xb7c3f3, 1)
 const light = new THREE.AmbientLight( 0xffffff ); // soft white light
 scene.add( light );
 
-// const geometry = new THREE.BoxGeometry();
-// const material = new THREE.MeshBasicMaterial( { color: 'red' } );
-// const cube = new THREE.Mesh( geometry, material );
-// scene.add( cube );
+
+// global variables
+
+const start_position = 3;
+const end_position = -start_position;
+
+
+
+function createCube (size, positionX, rotY = 0, color = 0xfbc851){
+    const geometry = new THREE.BoxGeometry(size.w, size.h, size.d);
+    const material = new THREE.MeshBasicMaterial( { color: color } );
+    const cube = new THREE.Mesh( geometry, material );
+    cube.position.x = positionX;
+    cube.rotation.y = rotY;
+    scene.add( cube );
+
+    return cube;
+}
 
 camera.position.z = 5;
 
@@ -31,13 +45,23 @@ class Doll {
     }
     
     lookBackward(){
-        this.doll.rotation.y = -3.15;
+        // this.doll.rotation.y = -3.15;
+        gsap.to(this.doll.rotation, {y: -3.15, duration: 1})
     }
 
     lookForward(){
-        this.doll.rotation.y = 0;
+        // this.doll.rotation.y = 0;
+        gsap.to(this.doll.rotation, {y: 0, duration: 2})
     }
 }
+
+function createTrack (){
+    createCube({w:.2, h: 1.5, d: 1}, start_position, -.35);
+    createCube({w:.2, h: 1.5, d: 1}, end_position, .35);
+    createCube({w: start_position * 2, h: 1.5, d: 1}, 0, 0);
+}
+
+createTrack();
 
 let doll = new Doll();
 
