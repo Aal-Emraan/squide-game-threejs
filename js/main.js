@@ -21,6 +21,8 @@ const text = document.querySelector(".text");
 const start_position = 3;
 const end_position = -start_position;
 const TIME_LIMIT = 10;
+let gameStat = "Loading";
+let isLookingBackward = true;
 
 function createCube(size, positionX, rotY = 0, color = 0xfbc851) {
 	const geometry = new THREE.BoxGeometry(size.w, size.h, size.d);
@@ -53,12 +55,14 @@ class Doll {
 
 	lookBackward() {
 		// this.doll.rotation.y = -3.15;
-		gsap.to(this.doll.rotation, { y: -3.15, duration: 1 });
+		gsap.to(this.doll.rotation, { y: -3.15, duration: 0.45 });
+		setTimeout(() => (isLookingBackward = true), 150);
 	}
 
 	lookForward() {
 		// this.doll.rotation.y = 0;
-		gsap.to(this.doll.rotation, { y: 0, duration: 2 });
+		gsap.to(this.doll.rotation, { y: 0, duration: 0.45 });
+		setTimeout(() => (isLookingBackward = false), 150);
 	}
 
 	async start() {
@@ -107,7 +111,19 @@ class Player {
 		gsap.to(this.playerInfo, { velocity: 0, duration: 0.1 });
 	}
 
+	check() {
+		if (this.playerInfo.velocity > 0 && !isLookingBackward) {
+			text.innerHTML = "YOU LOSE!";
+			gameStat = "over";
+		}
+		if (this.playerInfo.positionX < end_position) {
+			text.innerHTML = "YOU WIN!";
+			gameStat = "over";
+		}
+	}
+
 	update() {
+		this.check();
 		this.playerInfo.positionX -= this.playerInfo.velocity;
 		this.player.position.x = this.playerInfo.positionX;
 	}
@@ -132,10 +148,18 @@ async function init() {
 }
 
 function startGame() {
+	gameStat = "started";
 	const progressBar = createCube({ w: 5, h: 0.1, d: 1 }, 0);
 	progressBar.position.y = 3.35;
 	gsap.to(progressBar.scale, { x: 0, duration: TIME_LIMIT, ease: "none" });
 	doll.start();
+
+	setTimeout(() => {
+		if (gameStat != "over") {
+			text.innerHTML = "Your Time Is Up!";
+			gameStat = "over";
+		}
+	}, TIME_LIMIT * 1000);
 }
 
 // setTimeout(() => {
@@ -147,6 +171,9 @@ function startGame() {
 // }, 2000);
 
 function animate() {
+	if (gameStat == "over") {
+		return;
+	}
 	renderer.render(scene, camera);
 
 	// cube.rotation.x += 0.01;
@@ -166,6 +193,9 @@ function onWindowResize() {
 }
 
 window.addEventListener("keydown", (e) => {
+	if (gameStat != "started") {
+		return;
+	}
 	if (e.key == "ArrowUp") {
 		player.run();
 	}
